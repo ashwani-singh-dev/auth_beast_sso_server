@@ -21,10 +21,6 @@
 		<developer/>
 	</developers>
 	<repositories>
-		<repository>
-	     <id>github</id>
-	     <url>https://maven.pkg.github.com/ICubeSystems/*</url>
-	   </repository>
 	   <repository>
 	     <id>github-packages</id>
 	     <url>https://maven.pkg.github.com/zentois-ashwani/*</url>
