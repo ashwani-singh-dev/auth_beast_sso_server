@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}"></title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full space-y-8 bg-white p-10 rounded-xl shadow-md">
+        <div>
+            <h1 class="text-3xl font-bold text-center text-blue-700" th:text="${title}"></h1>
+            <p class="mt-2 text-center text-sm text-gray-600">Select an account to continue</p>
+        </div>
+
+        <div th:if="${error}" class="mt-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
+            <p class="font-bold">Error</p>
+            <p th:text="${error}">Maximum number of accounts reached. Please contact support.</p>
+        </div>
+
+        <div th:if="${#lists.isEmpty(accounts)}" class="text-center text-gray-600 italic">
+            <p>No accounts are currently logged in. Please login first</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(accounts)}">
+            <h2 class="mt-6 text-xl font-semibold text-gray-700">Choose an account to log in with:</h2>
+            <ul id="account-list" class="mt-4 space-y-3">
+                <li th:each="account, iterStat : ${accounts}" class="bg-white rounded-lg shadow-md p-4 hover:bg-gray-50 transition duration-150 ease-in-out">
+                    <div th:if="${account.expiryStatus == false}" class="flex items-center">
+                        <a th:href="@{/auth/v1/sso/signin(sessionId=${account.sessionId}, redirect_uri=${redirect_uri != null ? redirect_uri : null}, code_challenge=${code_challenge != null ? code_challenge : null})}"
+                            class="flex items-center text-lg font-medium text-blue-600 hover:text-blue-800">
+                            <i data-lucide="user" class="w-6 h-6 mr-3 text-blue-600"></i>
+                            <span th:text="${account.email}"></span>
+                        </a>
+                        <div th:if="${!#maps.isEmpty(account.apps)}" 
+                            class="ml-4 text-sm text-gray-500"
+                            th:text="'Logged in to: ' + ${#strings.listJoin(account.apps.keySet(), ', ')}">
+                        </div>
+                    </div>
+                
+                    <div th:if="${account.expiryStatus == true}" class="flex items-center">
+                        <i data-lucide="clock" class="w-5 h-5 mr-2 text-red-500"></i>
+                        <span th:text="${account.email}" class="mr-2"></span>
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Expired</span>
+                    </div>
+                </li>
+            </ul>
+            <div th:if="${#lists.size(accounts) > 4}" class="mt-4 flex justify-center">
+                <button th:each="page, iterStat : ${#numbers.sequence(1, T(java.lang.Math).ceil(#lists.size(accounts) / 4.0))}"
+                        th:classappend="${iterStat.index == 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}"
+                        class="mx-1 px-3 py-1 border border-blue-600 rounded-full bg-white hover:bg-blue-600 hover:text-white transition duration-150 ease-in-out text-blue-600"
+                        th:text="${page}"
+                        th:onclick="'showPage(' + ${page} + ')'">
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a th:href="@{/auth/v1/sso/signin(redirect_uri=${redirect_uri != null ? redirect_uri : null}, code_challenge=${code_challenge != null ? code_challenge : null})}"
+               class="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>
+                Login with another account
+            </a>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+
+        function showPage(page) {
+            const items = document.querySelectorAll('#account-list > li');
+            const itemsPerPage = 4;
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+
+            items.forEach((item, index) => {
+                item.style.display = (index >= start && index < end) ? 'block' : 'none';
+            });
+
+            document.querySelectorAll('button').forEach(button => {
+                button.classList.remove('bg-blue-600', 'text-white');
+                button.classList.add('bg-white', 'text-blue-600');
+            });
+
+            document.querySelector(`button:nth-child(${page})`).classList.add('bg-blue-600', 'text-white');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage(1);
+        });
+    </script>
+</body>
+</html>

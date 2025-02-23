@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Beast SSO - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md">
+        <div class="bg-white shadow-xl rounded-lg px-8 pt-6 pb-8 mb-4">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-700">Auth Beast SSO</h1>
+                <p class="text-gray-600">Secure Single Sign-On for Nceph Services</p>
+            </div>
+
+            <!-- Login Type Selector -->
+            <div class="mb-6">
+                <div class="flex rounded-md shadow-sm" role="group">
+                    <button type="button" onclick="switchLoginType('organization')" id="orgBtn" class="w-1/2 py-2 px-4 text-sm font-medium rounded-l-lg border focus:z-10 focus:ring-2 focus:ring-blue-700 bg-white border-gray-200 text-gray-900 hover:bg-gray-100 active-tab">
+                        <i data-lucide="building" class="w-4 h-4 inline-block mr-2"></i>
+                        Organization
+                    </button>
+                    <button type="button" onclick="switchLoginType('staff')" id="staffBtn" class="w-1/2 py-2 px-4 text-sm font-medium rounded-r-lg border focus:z-10 focus:ring-2 focus:ring-blue-700 bg-white border-gray-200 text-gray-900 hover:bg-gray-100">
+                        <i data-lucide="user" class="w-4 h-4 inline-block mr-2"></i>
+                        Staff
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${param.error}" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                <p class="text-sm flex items-center">
+                    <i data-lucide="alert-circle" class="w-4 h-4 mr-2"></i>
+                    <span th:text="${param.error}">Error message</span>
+                </p>
+            </div>
+
+            <form id="loginForm" method="post" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                    <input type="email" id="email" name="email" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
+                </div>
+                <!-- <div>
+                    <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <input type="password" id="password" name="password" required class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
+                </div> -->
+                <div class="relative">  
+                    <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required 
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500">
+                        <button type="button" onclick="togglePassword('password')" class="absolute right-3 top-2">
+                            <i data-lucide="eye" class="w-5 h-5 text-gray-500"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" name="redirect_uri" th:value="${param.redirect_uri}">
+                <input type="hidden" name="code_challenge" th:value="${param.code_challenge}">
+                
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="form-checkbox text-blue-600" name="remember-me">
+                        <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <a th:href="@{/auth/v1/pkk(redirect_uri=${param.redirect_uri}, code_challenge=${param.code_challenge})}" class="text-sm text-blue-500 hover:text-blue-800">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Social Login Section -->
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                    </div>
+                </div>
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <a href="#" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200">
+                        <i data-lucide="github" class="w-5 h-5 mr-2"></i>
+                        GitHub
+                    </a>
+                    <a th:href="${googleOAuthUrl}" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200">
+                        <i data-lucide="mail" class="w-5 h-5 mr-2"></i>
+                        Google
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+        
+        function switchLoginType(type)
+        {
+            const form = document.getElementById('loginForm');
+            const orgBtn = document.getElementById('orgBtn');
+            const staffBtn = document.getElementById('staffBtn');
+
+            if (type === 'organization')
+            {
+                form.action = '/auth/v1/sso/signin/organization';
+                orgBtn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-700');
+                staffBtn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-700');
+            }
+            else
+            {
+                form.action = '/auth/v1/sso/signin/staff';
+                staffBtn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-700');
+                orgBtn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-700');
+            }
+        }
+
+        // Set default login type on page load
+        switchLoginType('organization');
+    </script>
+</body>
+</html>
