@@ -1,5 +1,3 @@
-# auth_beast_sso_server
-
 # AuthBeast SSO Authentication Server
 
 **AuthBeast** is a robust authentication server built with Spring Boot. It provides secure Single Sign-On (SSO) using PKCE (Proof Key for Code Exchange), multi-factor authentication (MFA) via email OTP, secure password management, and session management. The server also supports API key verification to ensure that only trusted applications can integrate with it.
@@ -61,8 +59,3 @@
 
 ### Installation
 Note: This repository is a demonstration of AuthBeast's architecture and code structure. Some configuration files and dependencies are intentionally omitted for security reasons. Full implementation details will be shared upon request.
-
-# auth_beast_sso_Server
-# auth_beast_sso_Server
-# auth_beast_sso_Server
-# auth_beast_sso_Server
